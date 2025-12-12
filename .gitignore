@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Models (Too large for free Git)
+models/*.pkl
+models/*.bin
+models/*.pt
+
+# IDES
+.vscode/
+.idea/
+
+# Node
+node_modules/
+ui/node_modules/
+ui/dist/
+ui/build/
+
+# Data (Sensitive or large)
+data/*.zip
+data/*.csv
+data/*.json
+# Keep config templates, but ignore raw data
+!data/training_config.json
+!data/resumes/jane_doe.txt
+!data/job_descriptions/python_dev.txt
+
+# OS
+.DS_Store
+Thumbs.db

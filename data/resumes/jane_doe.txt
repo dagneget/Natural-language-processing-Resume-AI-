@@ -1,0 +1,11 @@
+Jane Doe
+Email: jane.doe@example.com
+Phone: (555) 123-4567
+
+Experience:
+Software Engineer with 5 years of experience in Python and Machine Learning.
+Proficient in Scikit-learn, Pandas, and NumPy.
+Experience with AWS and Docker.
+
+Education:
+B.S. in Computer Science

@@ -1,0 +1,18 @@
+{
+    "datasets": [
+        {
+            "name": "sonchuate/resume_ner",
+            "type": "huggingface",
+            "text_col": "resume",
+            "entities_col": "entities",
+            "format": "text_and_list"
+        },
+        {
+            "name": "data/YOUR_DATASET.json",
+            "type": "local",
+            "text_col": "text",
+            "entities_col": "label",
+            "format": "text_and_list"
+        }
+    ]
+}

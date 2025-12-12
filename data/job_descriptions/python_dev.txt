@@ -1,0 +1,9 @@
+Job Title: Senior Python Developer
+
+We are looking for a skilled Python developer with experience in Machine Learning.
+Key Skills:
+- Python
+- Machine Learning (Scikit-learn, TensorFlow)
+- Cloud platforms (AWS)
+- Containerization (Docker)
+- Bachelor's degree in Computer Science or related field.
