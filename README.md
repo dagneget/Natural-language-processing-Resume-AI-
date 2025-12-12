@@ -1,55 +1,76 @@
-# Automated Resume Screening and Skill Extraction Using NLP
+# 🚀 AI-Powered Resume Screener & Analyzer
 
-This project automates the process of screening resumes against a job description using Natural Language Processing (NLP).
+A powerful, full-stack Natural Language Processing (NLP) application that automates resume screening, skill extraction, and candidate ranking. Built with Python, FastAPI, and React.
 
-## Features
-- **Text Extraction**: parsed text from PDF, DOCX, and TXT files.
-- **Skill Extraction**: Identifies skills using spaCy NER and keyword matching.
-- **Ranking**: scores resumes based on cosine similarity to the job description.
+## ✨ Key Features
 
-## Setup
+### 1. 🧠 Advanced Skill Extraction (Hybrid Engine)
+We use a **Triple-Layer** extraction logic to ensure no skill is missed:
+- **Layer 1: Deep Learning (BERT)**: Uses `transformers` to identify skills conceptually (e.g., understanding "coding in Rust" implies "Rust" is a skill). *Runs primarily in Docker/Linux environments.*
+- **Layer 2: Machine Learning (Scikit-Learn)**: A trained TF-IDF model acting as a fallback to catch standard skill patterns locally.
+- **Layer 3: Regex & Keyword Matching**: A hard-coded fallback to ensure common technologies (Java, Python, AWS) are never missed.
 
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   python -m spacy download en_core_web_sm
-   ```
+### 2. 🔍 Semantic Search & Ranking
+Instead of just matching keywords, we use **Sentence-BERT (SBERT)** to understand meaning.
+- *Example*: If the JD asks for "Backend Developer" and the resume says "Server-side Engineer", the AI knows they are a match.
 
-2. Place files:
-   - Put candidate resumes in `data/resumes/`
-   - Put the Job Description in `data/job_descriptions/`
+### 3. 🏷️ Automated Domain Classification
+The system automatically categorizes resumes into professional domains (e.g., "Data Science", "Web Development", "HR") using a classic ML classifier trained on thousands of resumes.
 
-### Option 2: Run with Docker (Recommended)
-This is the easiest way to run the app on any machine.
-Prerequisite: Install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+### 4. 📄 Professional PDF Reports
+Generates a downloadable **Official Scorecard (PDF)** for every candidate, summarizing:
+- Match Score
+- Contact Information
+- Extracted Skills
+- Detected Domain
 
-1.  **Build and Run**:
-    ```bash
-    docker-compose up --build
-    ```
-2.  **Open Dashboard**:
-    Go to `http://localhost:5173`
+### 5. 🐳 Dockerized Deployment
+Solves the "works on my machine" problem.
+- **Backend (Python)**: Isolated environment avoids DLL/Version conflicts.
+- **Frontend (React)**: Pre-configured Node.js environment.
+- **One Command**: `docker-compose up --build` launches the entire stack.
 
 ---
 
-## 🛠 Features
-- **Smart Parsing**: Extracts text from PDF/DOCX.
-- **Skill Extraction**: Hybrid Model (Regex + ML) to find skills.
-- **Categorization**: Classifies resumes into domains (e.g. Data Science).
-- **Semantic Search**: Matches job descriptions by meaning (SBERT).
-- **PDF Reports**: Generates downloadable scorecards.
+## 🛠 Tech Stack
+- **AI/NLP**: PyTorch, Transformers (BERT), Sentence-Transformers, Scikit-Learn.
+- **Backend**: FastAPI, Uvicorn.
+- **Frontend**: React (Vite), Lucide Icons, Modern CSS.
+- **Data**: Pandas, NumPy.
+- **Infrastructure**: Docker, Docker Compose.
 
-## Usage
+---
 
-Run the main script:
-```bash
-python main.py
-```
+## 🚀 How to Run
 
-Options:
-- `--resumes`: Path to resumes folder (default: `data/resumes`)
-- `--jd`: Path to job descriptions folder (default: `data/job_descriptions`)
-- `--jd_file`: Path to a specific JD file.
+### Option 1: Docker (Recommended)
+This approach guarantees access to the BERT Deep Learning features.
+1. Install Docker Desktop.
+2. Run:
+   ```bash
+   docker-compose up --build
+   ```
+3. Open `http://localhost:5173`
 
-## Output
-Results are printed to the console and saved to `results.csv`.
+### Option 2: Local Python
+1. Install Python 3.10+.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Start the app:
+   ```bash
+   run_project.bat
+   ```
+   (or `python main.py`)
+
+---
+
+## 📊 Training Your Own Model
+You can retrain the internal models on your own data.
+1. Place your dataset (JSON/CSV/Parquet) in `data/`.
+2. Update `data/training_config.json`.
+3. Run:
+   ```bash
+   python train_model.py
+   ```
