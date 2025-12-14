@@ -1,5 +1,5 @@
-# Use Node 18 Alpine
-FROM node:18-alpine
+# Use Node 22 Alpine (required by Vite)
+FROM node:22-alpine
 
 # Set working directory
 WORKDIR /app

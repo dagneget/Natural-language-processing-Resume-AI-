@@ -4,7 +4,7 @@ import './index.css'
 
 function App() {
   const [file, setFile] = useState(null)
-  const [jd, setJd] = useState("We are looking for a skilled Software Engineer with Python and React experience.")
+  const [jd, setJd] = useState("")
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)

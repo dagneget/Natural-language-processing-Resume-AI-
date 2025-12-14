@@ -5,6 +5,7 @@ import shutil
 import os
 import uuid
 from typing import List
+import joblib
 
 # Import our NLP logic
 from src.parser import extract_text_from_file
@@ -49,8 +50,8 @@ async def analyze_resume(
              raise HTTPException(status_code=400, detail="Could not extract text from file.")
         
         # 2. Extract Skills & Info
-        # 2. Extract Skills (Hybrid)
-        skills, info = extract_skills(resume_text)
+        skills = extract_skills(resume_text)
+        info = extract_contact_info(resume_text)
         
         # 3. Categorize Resume
         category = "Unknown"

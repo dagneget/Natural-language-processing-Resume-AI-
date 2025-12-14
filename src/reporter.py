@@ -13,18 +13,32 @@ class PDFReport(FPDF):
         self.set_font('helvetica', 'I', 8)
         self.cell(0, 10, f'Page {self.page_no()}', align='C')
 
+def clean_text(text):
+    if not text: return ""
+    # Common unsupported characters in standard PDF fonts
+    replacements = {
+        "ﬁ": "fi", "ﬂ": "fl",
+        "’": "'", "‘": "'",
+        "“": '"', "”": '"',
+        "–": "-", "—": "-"
+    }
+    for k, v in replacements.items():
+        text = text.replace(k, v)
+    # Encode to latin-1 (standard PDF encoding) and replace unknowns with ?
+    return text.encode('latin-1', 'replace').decode('latin-1')
+
 def generate_report(candidate_data, job_description, filename):
     pdf = PDFReport()
     pdf.add_page()
     
     # 1. Candidate Info
     pdf.set_font('helvetica', 'B', 16)
-    pdf.cell(0, 10, f"Candidate: {filename}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 10, f"Candidate: {clean_text(filename)}", new_x="LMARGIN", new_y="NEXT")
     
     pdf.set_font('helvetica', '', 12)
     contact = candidate_data.get('contact', {})
-    pdf.cell(0, 8, f"Email: {contact.get('email', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
-    pdf.cell(0, 8, f"Phone: {contact.get('phone', 'N/A')}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 8, f"Email: {clean_text(contact.get('email', 'N/A'))}", new_x="LMARGIN", new_y="NEXT")
+    pdf.cell(0, 8, f"Phone: {clean_text(contact.get('phone', 'N/A'))}", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
 
     # 2. Score Section
@@ -54,7 +68,7 @@ def generate_report(candidate_data, job_description, filename):
     if skills:
         # Wrap skills nicely
         skills_text = ", ".join(skills)
-        pdf.multi_cell(0, 8, skills_text)
+        pdf.multi_cell(0, 8, clean_text(skills_text))
     else:
         pdf.cell(0, 8, "No specific skills detected.", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(10)
@@ -63,7 +77,7 @@ def generate_report(candidate_data, job_description, filename):
     pdf.set_font('helvetica', 'B', 14)
     pdf.cell(0, 10, "Job Text Snippet", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font('helvetica', 'I', 10)
-    pdf.multi_cell(0, 6, job_description[:500] + "...")
+    pdf.multi_cell(0, 6, clean_text(job_description[:500]) + "...")
     
     # Output
     reports_dir = "reports"
