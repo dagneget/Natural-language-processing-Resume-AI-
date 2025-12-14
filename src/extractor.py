@@ -136,3 +136,38 @@ def extract_contact_info(text):
         "email": email[0] if email else None,
         "phone": phone[0] if phone else None
     }
+
+def extract_education(text):
+    """
+    Extracts education degrees using Regex.
+    """
+    # Common degrees
+    patterns = [
+        r"(?i)\b(?:B\.?Sc|M\.?Sc|B\.?A|M\.?A|B\.?Tech|M\.?Tech|Ph\.?D|MBA|Bachelor|Master|Diploma)\b.*?(?:in|of)?.*?(?:Computer Science|Engineering|Information Technology|Data Science|Business|Arts)?",
+    ]
+    
+    education = []
+    for pattern in patterns:
+        found = re.findall(pattern, text)
+        for f in found:
+            # Clean up long matches that might be false positives
+            if len(f.split()) < 10: 
+                education.append(f.strip())
+                
+    # Deduplicate while preserving order
+    return list(dict.fromkeys(education))
+
+def extract_experience(text):
+    """
+    Extracts years of experience.
+    """
+    # Pattern: "5+ years of experience", "5 years experience", "Experience: 5 years"
+    pattern = r"(\d+(?:\.\d+)?\+?)\s*(?:years?|yrs?)\s*(?:of)?\s*experience"
+    
+    matches = re.search(pattern, text, re.IGNORECASE)
+    if matches:
+        return matches.group(1) # Return the number part (e.g. "5+")
+    
+    # Fallback to just finding "X years" if it looks like a summary
+    # Be more conservative here
+    return None

@@ -101,6 +101,18 @@ function App() {
                   <h3><Mail className="icon" /> Contact Info</h3>
                   <p>Email: {result.contact.email || 'N/A'}</p>
                   <p>Phone: {result.contact.phone || 'N/A'}</p>
+
+                  {result.education && result.education.length > 0 && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <strong>Education:</strong> {result.education.join(', ')}
+                    </div>
+                  )}
+                  {result.experience && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <strong>Experience:</strong> {result.experience} years
+                    </div>
+                  )}
+
                   {result.category && (
                     <p style={{ marginTop: '1rem', color: '#60A5FA', fontWeight: 'bold' }}>
                       Detected Field: {result.category}
@@ -118,6 +130,39 @@ function App() {
                   {result.skills.length === 0 && <span className="no-skills">No specific skills detected.</span>}
                 </div>
               </div>
+
+              {result.missing_skills && result.missing_skills.length > 0 && (
+                <div className="skills-container" style={{ marginTop: '1.5rem', border: '1px solid #FECACA', background: '#FEF2F2', padding: '1rem', borderRadius: '0.5rem' }}>
+                  <h3 style={{ color: '#DC2626' }}><AlertCircle className="icon" size={20} /> Missing Skills from JD</h3>
+                  <div className="tags">
+                    {result.missing_skills.map((skill, index) => (
+                      <span key={index} className="tag" style={{ background: '#FEE2E2', color: '#B91C1C', border: '1px solid #FCA5A5' }}>{skill}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Keyword Highlighting Section */}
+              {result.summary && (
+                <div className="card" style={{ marginTop: '2rem', padding: '1rem', background: '#1F2937' }}>
+                  <h3><FileText className="icon" /> Resume Preview (Keywords Highlighted)</h3>
+                  <div style={{ padding: '1rem', background: '#111827', borderRadius: '0.5rem', maxHeight: '300px', overflowY: 'auto', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                    {(() => {
+                      // Simple highlighting logic
+                      const text = result.summary;
+                      const skills = new Set(result.skills.map(s => s.toLowerCase()));
+                      const parts = text.split(/(\b\w+\b)/g); // basic tokenizer
+
+                      return parts.map((part, i) => {
+                        if (skills.has(part.toLowerCase())) {
+                          return <span key={i} style={{ background: '#F59E0B', color: '#000', padding: '0 2px', borderRadius: '2px', fontWeight: 'bold' }}>{part}</span>
+                        }
+                        return part;
+                      })
+                    })()}
+                  </div>
+                </div>
+              )}
 
               {result.report_url && (
                 <div style={{ marginTop: '2rem', textAlign: 'center' }}>

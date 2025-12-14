@@ -39,6 +39,17 @@ def generate_report(candidate_data, job_description, filename):
     contact = candidate_data.get('contact', {})
     pdf.cell(0, 8, f"Email: {clean_text(contact.get('email', 'N/A'))}", new_x="LMARGIN", new_y="NEXT")
     pdf.cell(0, 8, f"Phone: {clean_text(contact.get('phone', 'N/A'))}", new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(2)
+    
+    # Education & Experience
+    education = candidate_data.get('education', [])
+    experience = candidate_data.get('experience')
+    
+    if education:
+        pdf.cell(0, 8, f"Education: {clean_text(', '.join(education))}", new_x="LMARGIN", new_y="NEXT")
+    if experience:
+        pdf.cell(0, 8, f"Experience: {clean_text(experience)} years identified", new_x="LMARGIN", new_y="NEXT")
+        
     pdf.ln(10)
 
     # 2. Score Section
@@ -71,7 +82,18 @@ def generate_report(candidate_data, job_description, filename):
         pdf.multi_cell(0, 8, clean_text(skills_text))
     else:
         pdf.cell(0, 8, "No specific skills detected.", new_x="LMARGIN", new_y="NEXT")
-    pdf.ln(10)
+    pdf.ln(5)
+
+    # 3.1 Missing Skills (if any)
+    missing = candidate_data.get('missing_skills', [])
+    if missing:
+        pdf.set_text_color(239, 68, 68) # Red
+        pdf.set_font('helvetica', 'B', 12)
+        pdf.cell(0, 10, "Missing Skills from JD:", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font('helvetica', '', 11)
+        pdf.multi_cell(0, 8, clean_text(", ".join(missing)))
+        pdf.set_text_color(0, 0, 0) # Reset
+        pdf.ln(5)
 
     # 4. Job Description Snippet
     pdf.set_font('helvetica', 'B', 14)

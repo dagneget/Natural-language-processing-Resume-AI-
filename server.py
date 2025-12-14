@@ -9,8 +9,20 @@ import joblib
 
 # Import our NLP logic
 from src.parser import extract_text_from_file
-from src.extractor import extract_skills, extract_contact_info
+from src.extractor import extract_skills, extract_contact_info, extract_education, extract_experience
 from src.screener import calculate_similarity
+
+app = FastAPI()
+
+# ... (CORS and Setup code omitted for brevity matching target) ...
+# I need to match the exact target content carefully or use block replacement.
+# I will just update the imports and the specific logic block using smaller chunks if possible, 
+# but simply replacing the function body is safer if I include enough context.
+
+# Let's try to update the imports first.
+# Wait, I can't do multiple discontinuous edits with replace_file_content.
+# I will use multi_replace_file_content since I need to change imports AND the function body.
+
 
 app = FastAPI()
 
@@ -50,8 +62,16 @@ async def analyze_resume(
              raise HTTPException(status_code=400, detail="Could not extract text from file.")
         
         # 2. Extract Skills & Info
-        skills = extract_skills(resume_text)
+        resume_skills = extract_skills(resume_text)
+        jd_skills = extract_skills(job_description) if job_description else []
+        
+        # Calculate Missing Skills
+        r_skills_norm = {s.lower() for s in resume_skills}
+        missing_skills = [s for s in jd_skills if s.lower() not in r_skills_norm]
+
         info = extract_contact_info(resume_text)
+        education = extract_education(resume_text)
+        experience = extract_experience(resume_text)
         
         # 3. Categorize Resume
         category = "Unknown"
@@ -85,8 +105,11 @@ async def analyze_resume(
         from src.reporter import generate_report
         report_path = generate_report({
             "score": score,
-            "skills": skills,
+            "skills": resume_skills,
+            "missing_skills": missing_skills,
             "contact": info,
+            "education": education,
+            "experience": experience,
             "category": category
         }, job_description, resume.filename)
         
@@ -96,11 +119,14 @@ async def analyze_resume(
         return {
             "filename": resume.filename,
             "score": score,
-            "skills": skills,
+            "skills": resume_skills,
+            "missing_skills": missing_skills,
             "contact": info,
+            "education": education,
+            "experience": experience,
             "category": category,
             "report_url": f"/report/Report_{resume.filename}.pdf",
-            "summary": resume_text[:200] + "..." # Preview
+            "summary": resume_text # Return full text for highlighting
         }
 
     except Exception as e:
