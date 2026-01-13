@@ -58,7 +58,9 @@ def read_root():
     return {"status": "online", "message": "ResumeAI Precision API is Live!", "branch": "enhanced-skills-analysis"}
 
 UPLOAD_DIR = "uploads"
+REPORT_DIR = "reports"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(REPORT_DIR, exist_ok=True)
 
 @app.post("/analyze")
 async def analyze_resume(
