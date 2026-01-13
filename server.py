@@ -108,7 +108,8 @@ async def analyze_resume(
             try:
                 cleaned_text = clean_text_for_classifier(resume_text)
                 prediction = CLF.predict([cleaned_text])
-                category = ENC.inverse_transform(prediction)[0]
+                cat_list = ENC.inverse_transform(prediction)
+                category = cat_list[0] if cat_list is not None and len(cat_list) > 0 else "Professional"
             except Exception as e:
                 print(f"Classification failed: {e}")
         else:
@@ -124,43 +125,55 @@ async def analyze_resume(
                  category = "Professional"
 
         # 4. Calculate Score
-        score = calculate_similarity(resume_text, job_description)
+        try:
+            score = calculate_similarity(resume_text, job_description)
+        except Exception as sim_err:
+            print(f"Similarity calculation failed: {sim_err}")
+            score = 0.0
         
         # 5. Generate Report
         from src.reporter import generate_report
+        
+        # Ensure experience is a string for the reporter
+        exp_str = experience[0] if isinstance(experience, list) and experience else "N/A"
+        
         report_path = generate_report({
             "score": score,
             "skills": resume_skills,
             "missing_skills": missing_skills,
             "contact": info,
             "education": education,
-            "experience": experience,
+            "experience": exp_str,
             "category": category
         }, job_description, resume.filename)
         
-        # Cleanup
-        os.remove(temp_path)
-        # Clear large text variables before GC
-        resume_text = None
-        details = None
-        gc.collect() 
-        
-        return {
+        # Prepare Response
+        response_data = {
             "filename": resume.filename,
             "score": score,
             "skills": resume_skills,
             "missing_skills": missing_skills,
             "contact": info,
             "education": education,
-            "experience": experience,
+            "experience": exp_str,
             "category": category,
             "report_url": f"/report/Report_{resume.filename}.pdf",
-            "summary": resume_text[:10000] # Limit preview size
+            "summary": resume_text[:5000] if resume_text else ""
         }
 
+        # Cleanup
+        os.remove(temp_path)
+        resume_text = None
+        details = None
+        gc.collect() 
+        
+        return response_data
+
     except Exception as e:
-        print(f"Error processing file: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        error_msg = traceback.format_exc()
+        print(f"CRITICAL ERROR in analyze_resume: {error_msg}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 from fastapi.responses import FileResponse
 

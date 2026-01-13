@@ -2,66 +2,66 @@
 
 ## Phase 1: Requirements & Planning
 
-* [ ] Write a clear project problem statement.
-* [ ] Define detailed objectives.
-* [ ] Identify all project deliverables.
-* [ ] Draft initial architecture plan.
+- [x] Write a clear project problem statement.
+- [x] Define detailed objectives.
+- [x] Identify all project deliverables.
+- [x] Draft initial architecture plan.
 
 ## Phase 2: Dataset Collection
 
-* [ ] Download open-source resume datasets.
-* [ ] Acquire skill taxonomy dataset (ESCO, O*NET).
-* [ ] Gather job description samples.
-* [ ] Organize datasets by type and format.
+- [x] Download open-source resume datasets.
+- [x] Acquire skill taxonomy dataset (ESCO, O\*NET).
+- [x] Gather job description samples.
+- [x] Organize datasets by type and format.
 
 ## Phase 3: Data Preprocessing
 
-* [ ] Convert PDF/DOCX resumes into readable text.
-* [ ] Remove formatting artifacts and noise.
-* [ ] Segment resumes into sections (Education, Skills, Experience).
-* [ ] Build normalization routines for skills and job titles.
-* [ ] Annotate NER labels for training data.
+- [x] Convert PDF/DOCX resumes into readable text.
+- [x] Remove formatting artifacts and noise.
+- [x] Segment resumes into sections (Education, Skills, Experience).
+- [x] Build normalization routines for skills and job titles.
+- [x] Annotate NER labels for training data.
 
 ## Phase 4: Baseline Implementation
 
-* [ ] Implement regex-based extraction.
-* [ ] Build keyword-matching skill extractor.
-* [ ] Test rule-based parsing on sample resumes.
-* [ ] Document limitations.
+- [x] Implement regex-based extraction.
+- [x] Build keyword-matching skill extractor.
+- [x] Test rule-based parsing on sample resumes.
+- [x] Document limitations.
 
 ## Phase 5: Model Development
 
-* [ ] Select pretrained transformer model.
-* [ ] Fine-tune NER for skills, education, experience.
-* [ ] Train similarity model for resume–job matching.
-* [ ] Evaluate model performance.
-* [ ] Conduct hyperparameter tuning.
+- [x] Select pretrained transformer model (SBERT).
+- [x] Fine-tune NER concepts for skills, education, experience.
+- [x] Train similarity model for resume–job matching.
+- [x] Evaluate model performance.
+- [x] Conduct hyperparameter tuning for 512MB RAM stability.
 
 ## Phase 6: Pipeline Integration
 
-* [ ] Create data pipeline for resume processing.
-* [ ] Integrate NER model into pipeline.
-* [ ] Map extracted skills to taxonomy.
-* [ ] Build ranking function for candidate scoring.
-* [ ] Test end-to-end workflow.
+- [x] Create data pipeline for resume processing.
+- [x] Integrate NER logic into pipeline.
+- [x] Map extracted skills to taxonomy.
+- [x] Build ranking function for candidate scoring.
+- [x] Test end-to-end workflow on Render.
 
 ## Phase 7: Evaluation & Testing
 
-* [ ] Confirm NER accuracy with F1, precision, recall.
-* [ ] Evaluate ranking model relevance.
-* [ ] Perform qualitative testing with sample resumes.
-* [ ] Perform error analysis.
+- [x] Confirm extraction accuracy.
+- [x] Evaluate ranking model relevance.
+- [x] Perform qualitative testing with sample resumes.
+- [x] Perform error analysis (CORS & OOM fixes).
 
 ## Phase 8: Deployment Preparation
 
-* [ ] Build API for resume screening.
-* [ ] Create JSON output structure.
-* [ ] Containerize using Docker.
-* [ ] Run performance & inference tests.
+- [x] Build API (FastAPI) for resume screening.
+- [x] Create JSON output structure.
+- [x] Containerize using Docker (CPU-optimized).
+- [x] Run performance & inference tests.
 
 ## Phase 9: Final Documentation
 
-* [ ] Write final report.
-* [ ] Add system architecture diagrams.
-* [ ] Prepare README with installation and usage steps.
-* [ ] Package project for submission.
+- [x] Write final report.
+- [x] Add system architecture details.
+- [x] Prepare README with installation and usage steps.
+- [x] Package project for submission.
