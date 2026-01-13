@@ -119,6 +119,8 @@ async def analyze_resume(
                      category = "Data Science"
                  elif any(s in ["React", "HTML", "CSS"] for s in details["skills"]):
                      category = "Frontend Dev"
+                 elif any(s in ["Virtual Assistance", "Administrative Support", "Google Workspace"] for s in details["skills"]):
+                     category = "Virtual Assistant"
                  else:
                      category = "Software Engineer"
              else:
