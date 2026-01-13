@@ -53,7 +53,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.api_route("/", methods=["GET", "HEAD"])
+@app.get("/")
 def read_root():
     return {"status": "online", "message": "ResumeAI Precision API is Live!", "branch": "enhanced-skills-analysis"}
 
