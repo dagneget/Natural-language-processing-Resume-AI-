@@ -13,7 +13,7 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Expose port
+# Expose port 
 EXPOSE 5173
 
 # Run in development mode (easiest for local deployment without Nginx setup)

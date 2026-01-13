@@ -15,4 +15,5 @@ fastapi
 uvicorn
 python-multipart
 datasets
+gliner
 

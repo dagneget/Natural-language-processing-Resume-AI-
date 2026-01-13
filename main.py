@@ -1,7 +1,7 @@
 import os
 import argparse
 from src.parser import extract_text_from_file
-from src.extractor import extract_skills, extract_contact_info
+from src.extractor import extract_all_details
 from src.screener import rank_resumes
 import pandas as pd
 
@@ -55,13 +55,14 @@ def main():
         text = extract_text_from_file(filepath)
         
         if text:
-            skills = extract_skills(text)
-            contact = extract_contact_info(text)
+            details = extract_all_details(text)
             resumes_data.append({
                 'filename': filename,
                 'text': text,
-                'skills': skills,
-                'contact': contact
+                'skills': details.get('skills', []),
+                'contact': {'email': details.get('email'), 'phone': details.get('phone')},
+                'education': details.get('education', []),
+                'experience': details.get('experience', [])
             })
 
     # 3. Rank and Score
@@ -70,7 +71,14 @@ def main():
     # 4. Output Results
     print("\n--- Recruitment Results ---\n")
     df = pd.DataFrame(ranked)
-    print(df[['filename', 'score', 'email', 'skills']].to_string(index=False))
+    print("\n--- Recruitment Results ---\n")
+    df = pd.DataFrame(ranked)
+    # Add new columns to the display if they exist
+    display_cols = ['filename', 'score', 'email', 'skills', 'education', 'experience']
+    # Filter to only cols that exist in dataframe to avoid errors if empty
+    display_cols = [c for c in display_cols if c in df.columns]
+    
+    print(df[display_cols].to_string(index=False))
     
     # Save to CSV
     df.to_csv("results.csv", index=False)
