@@ -40,6 +40,40 @@ ResumeAI is a state-of-the-art recruitment tool that leverages **Natural Languag
 
 ---
 
+## 📂 Project Directory Structure
+
+### 🏗 **Root Directory**
+
+- `server.py`: The heart of the application. It hosts the FastAPI endpoints, manages CORS, and orchestrates the analysis flow.
+- `main.py`: The Command Line Interface (CLI) version of the tool for batch processing resumes without the UI.
+- `Dockerfile`: Contains the blueprints for building the production container, optimized for minimal memory usage.
+- `docker-compose.yml`: Used for local development to spin up both the backend and frontend in a single command.
+- `requirements.txt`: Lists all Python dependencies required for the NLP engine.
+- `train_model.py`: Utility script used to train the Scikit-Learn domain classification model.
+
+### 🧠 **`src/` (Core Logic)**
+
+- `parser.py`: Handles file ingestion. It contains logic to strip text from **PDF** and **DOCX** files while maintaining text purity.
+- `extractor.py`: The "Smart Scanner." Contains the regex logic and keyword maps for identifying skills, education, and contact details.
+- `screener.py`: The "Brain." Implements the SBERT neural embedding logic and the cosine similarity math for ranking.
+- `reporter.py`: The "Writer." Uses `fpdf2` to generate the stylized deep-analysis PDF reports.
+- `classifier.py`: Manages the loading and execution of the ML model for domain categorization.
+
+### 🎨 **`ui/` (Frontend)**
+
+- `ui/src/App.jsx`: The main React component. Manages the state of uploads, the analysis spinner, and result rendering.
+- `ui/src/index.css`: The "Premium Shield." Contains the glassmorphism design system and animation keyframes.
+- `ui/dist/`: (Created after build) Contains the optimized static code served to the user's browser.
+
+### 📁 **Data & Temp Folders**
+
+- `uploads/`: A secure temporary landing zone for resumes as they are being processed.
+- `reports/`: Storage for generated PDF scorecards before they are served to the recruiter.
+- `models/`: Stores the serialized `.pkl` or weights for the domain classification models.
+- `data/`: Contains sample resumes or datasets used for testing and training.
+
+---
+
 ## 🧠 How It Works (The Pipeline)
 
 ### Step 1: Ingestion
@@ -79,7 +113,33 @@ To run this complex "heavy" engine on free-tier servers (512MB RAM), we implemen
 
 ---
 
-## 🚀 Future Roadmap
+## � Dataset & Knowledge Base
+
+The accuracy of ResumeAI is built upon multiple high-quality datasets used for training our Machine Learning models:
+
+### 1. **Resume Classification Dataset**
+
+- **Source**: `UpdatedResumeDataSet.csv` (Commonly sourced from Kaggle's "Resume Dataset").
+- **Size**: ~962 unique resumes.
+- **Categories**: 25 distinct job domains including Data Science, HR, Advocate, Arts, Web Designing, Mechanical Engineering, Sales, Health and Fitness, Civil Engineering, and more.
+- **Purpose**: This dataset trains the `SGDClassifier` to recognize the linguistic patterns unique to each profession, allowing the app to automatically detect the "Category" of an uploaded resume.
+
+### 2. **NER (Skill Extraction) Dataset**
+
+- **Source**: `sonchuate/resume_ner` (Hugging Face).
+- **Type**: Annotated Named Entity Recognition (NER) data.
+- **Usage**: Used to train the model to distinguish between a "Skill" (e.g., Python), an "Organization" (e.g., Google), and a "Job Title".
+- **Logic**: Our `train_model.py` script tokenizes this data into hundreds of thousands of individual words (tokens) and trains a model to predict the probability that a specific word represents a technical competency.
+
+### 3. **Semantic Embedding Weights**
+
+- **Source**: Sentence-Transformers / Hugging Face.
+- **Model**: `all-MiniLM-L6-v2`.
+- **Context**: This model was pre-trained on a diverse corpus of over 1 billion sentence pairs. We utilize these pre-trained "weights" to perform the vector math (embeddings) that powers our **Semantic Score**.
+
+---
+
+## �🚀 Future Roadmap
 
 - **LLM Integration**: Replacing the keyword gap analysis with a local Llama model for even deeper "Reasoning" on candidate fit.
 - **Knowledge Graph**: Building a graph database of skills to understand career progression (e.g., knowing that a "Junior Developer" often becomes a "Senior Developer").

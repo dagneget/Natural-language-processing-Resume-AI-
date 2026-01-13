@@ -40,14 +40,16 @@ def clean_text_for_classifier(text):
     clean = re.sub(r'\s+', ' ', clean)
     return clean.lower()
 
+import gc
+
 app = FastAPI()
 
-# Ultimate CORS allowance for Render stability
+# Refined CORS for production stability
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["DELETE", "GET", "POST", "PUT", "OPTIONS"],
+    allow_credentials=False, # Must be False when using origins=["*"]
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -136,6 +138,7 @@ async def analyze_resume(
         
         # Cleanup
         os.remove(temp_path)
+        gc.collect() # Force memory cleanup to prevent OOM on Render
         
         return {
             "filename": resume.filename,
