@@ -26,7 +26,8 @@ def extract_entities_basic(text):
         "Web Tech": ["react", "node", "express", "angular", "vue", "html5", "css3", "sass", "tailwind", "bootstrap", "next.js", "graphql", "rest api"],
         "Cloud/DevOps": ["aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "terraform", "ansible", "ci/cd", "serverless", "ec2", "s3", "lambda"],
         "Data/AI": ["sql", "nosql", "postgresql", "mongodb", "redis", "elasticsearch", "spark", "hadoop", "nlp", "machine learning", "deep learning", "pytorch", "tensorflow", "pandas", "numpy", "scikit-learn", "data science"],
-        "Frameworks": ["fastapi", "django", "flask", "spring boot", "laravel", "pytorch", "keras", "opencv"]
+        "Frameworks": ["fastapi", "django", "flask", "spring boot", "laravel", "pytorch", "keras", "opencv"],
+        "Business/Productivity": ["google workspace", "microsoft office", "trello", "asana", "calendar management", "inbox management", "data entry", "project coordination", "virtual assistance", "administrative support"]
     }
 
     for category, skills in skill_map.items():
@@ -40,7 +41,7 @@ def extract_entities_basic(text):
                 extracted["skills"].add(display_name)
             
     # Specialized Domain Detection (Job Titles)
-    titles = ["software engineer", "data scientist", "frontend developer", "backend developer", "fullstack developer", "devops engineer", "product manager", "project manager", "qa engineer", "solutions architect"]
+    titles = ["software engineer", "data scientist", "frontend developer", "backend developer", "fullstack developer", "devops engineer", "product manager", "project manager", "qa engineer", "solutions architect", "virtual assistant", "administrative assistant", "event coordinator"]
     for title in titles:
         if re.search(rf'\b{re.escape(title)}\b', text_lower):
             extracted["job_titles"].add(title.title())
