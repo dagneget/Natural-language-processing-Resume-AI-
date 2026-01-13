@@ -15,6 +15,8 @@ function App() {
     setError(null)
   }
 
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000"
+
   const handleAnalyze = async () => {
     if (!file) {
       setError("Please select a resume file.")
@@ -28,7 +30,7 @@ function App() {
     formData.append("job_description", jd)
 
     try {
-      const response = await fetch("http://localhost:8000/analyze", {
+      const response = await fetch(`${API_BASE}/analyze`, {
         method: "POST",
         body: formData,
       })
@@ -162,7 +164,7 @@ function App() {
 
             {result.report_url && (
               <a
-                href={`http://localhost:8000${result.report_url}`}
+                href={`${API_BASE}${result.report_url}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="download-link"
