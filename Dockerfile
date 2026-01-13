@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 
 # Install Python dependencies
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir transformers sentence-transformers
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir python-multipart
 

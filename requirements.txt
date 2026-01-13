@@ -5,9 +5,6 @@ pandas
 numpy
 pytest
 pytest==7.4.3
-transformers
-torch
-sentence-transformers
 dataset
 fpdf2
 fastapi

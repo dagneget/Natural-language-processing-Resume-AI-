@@ -138,7 +138,10 @@ async def analyze_resume(
         
         # Cleanup
         os.remove(temp_path)
-        gc.collect() # Force memory cleanup to prevent OOM on Render
+        # Clear large text variables before GC
+        resume_text = None
+        details = None
+        gc.collect() 
         
         return {
             "filename": resume.filename,

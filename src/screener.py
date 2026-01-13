@@ -38,12 +38,26 @@ def calculate_similarity(resume_text, job_description):
     """
     if model:
         try:
-            embeddings = model.encode([job_description, resume_text], convert_to_tensor=True)
-            cosine_scores = util.cos_sim(embeddings[0], embeddings[1])
-            score = cosine_scores.item()
-            return round(score * 100, 2)
+            with torch.no_grad():
+                # use_auth_token set to False for public models
+                embeddings = model.encode([job_description, resume_text], convert_to_numpy=True)
+                
+                # Manual Cosine Similarity using numpy to keep things lean
+                def cos_sim(a, b):
+                    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+                
+                sim_score = cos_sim(embeddings[0], embeddings[1])
+                
+                # Optional: clear cpu cache if applicable (usually less effective on CPU but good practice)
+                if hasattr(torch, "cuda") and torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                
+                return round(float(sim_score) * 100, 2)
         except Exception as e:
             logger.error(f"SBERT encoding failed: {e}. Falling back to TF-IDF.")
+            # Clear partially loaded tensors
+            import gc
+            gc.collect()
     
     # TF-IDF Fallback
     try:
