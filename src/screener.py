@@ -12,13 +12,19 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import torch
+
 # Load model globally
 model = None
 try:
     if SentenceTransformer:
-        logger.info("Loading SBERT model (all-MiniLM-L6-v2)...")
-        model = SentenceTransformer('all-MiniLM-L6-v2')
-        logger.info("SBERT model loaded successfully.")
+        # Limit torch to single thread to save memory on Render
+        torch.set_num_threads(1)
+        torch.set_num_interop_threads(1)
+        
+        logger.info("Loading Lightweight SBERT (paraphrase-MiniLM-L3-v2)...")
+        model = SentenceTransformer('paraphrase-MiniLM-L3-v2')
+        logger.info("Lighter model loaded successfully.")
     else:
         logger.warning("SentenceTransformers not available, will use TF-IDF fallback.")
 except Exception as e:
