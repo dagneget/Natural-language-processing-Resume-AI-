@@ -42,14 +42,18 @@ def clean_text_for_classifier(text):
 
 app = FastAPI()
 
-# Enable CORS for React frontend (dev mode)
+# Ultimate CORS allowance for Render stability
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for dev, restrict in prod
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["DELETE", "GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+def read_root():
+    return {"status": "online", "message": "ResumeAI Precision API is Live!", "branch": "enhanced-skills-analysis"}
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)

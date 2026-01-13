@@ -18,7 +18,6 @@ RUN pip install --no-cache-dir python-multipart
 
 # Pre-download ML models to avoid latency on first run
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
-RUN python -c "from gliner import GLiNER; GLiNER.from_pretrained('urchade/gliner_small-v2.1')"
 
 # Copy the rest of the application
 COPY . .
