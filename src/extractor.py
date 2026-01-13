@@ -1,133 +1,91 @@
 import re
 import os
-import joblib
+import logging
 
-# Global variable for model
-bert_nlp = None
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def extract_skills_bert(text):
+def extract_entities_basic(text):
     """
-    Extract skills using BERT Deep Learning model.
-    Returns a list of unique skills.
-    
-    NOTE: Setup to import transformers ONLY inside the function
-    to prevent DLL crashes on Windows systems that have broken PyTorch.
-    On Docker (Linux), this will import successfully.
+    Enhanced extraction using comprehensive keyword matching and specialized regex.
     """
-    global bert_nlp
+    text_lower = text.lower()
     
-    if bert_nlp is None:
-        try:
-            from transformers import pipeline
-            bert_nlp = pipeline('token-classification', model='yashpwr/resume-ner-bert-v2', aggregation_strategy='simple')
-        except Exception:
-            # Silent failure or log once
-            return []
-
-    try:
-        # BERT has a token limit (usually 512). We process the first chunk of text.
-        # For a full implementation, we'd overlap-chunk the text.
-        # Truncate to ~2000 chars roughly to avoid massive inputs, though pipeline handles some.
-        results = bert_nlp(text[:2000])
-        
-        skills = set()
-        for entity in results:
-            # The model returns entities with groups like 'LABEL_1' or 'Skill' depending on training
-            # yashpwr model usually returns 'Skill' entities
-            if 'Skill' in entity.get('entity_group', '') or 'LABEL_1' in entity.get('entity_group', ''):
-                skills.add(entity['word'].strip())
-                
-        return list(skills)
-    except Exception as e:
-        print(f"BERT Extraction failed: {e}")
-        return []
-
-# Load trained model if available
-MODEL_PATH = "models/skill_classifier.pkl"
-VEC_PATH = "models/vectorizer.pkl"
-clf = None
-vec = None
-
-if os.path.exists(MODEL_PATH) and os.path.exists(VEC_PATH):
-    try:
-        clf = joblib.load(MODEL_PATH)
-        vec = joblib.load(VEC_PATH)
-        print("Loaded ML model for skill extraction.")
-    except Exception as e:
-        print(f"Error loading ML model: {e}")
-
-def get_features(token):
-    return {
-        "word": token.lower(),
-        "is_upper": token.isupper(),
-        "is_title": token.istitle(),
-        "is_digit": token.isdigit(),
-        "len": len(token),
-        "prefix-2": token[:2],
-        "suffix-2": token[-2:],
+    extracted = {
+        "skills": set(),
+        "education": set(),
+        "experience": set(),
+        "job_titles": set(),
+        "companies": set()
+    }
+    
+    # Comprehensive Skill Categories
+    skill_map = {
+        "Languages": ["python", "javascript", "java", "c\+\+", "c\#", "ruby", "golang", "typescript", "swift", "kotlin", "rust", "php", "scala"],
+        "Web Tech": ["react", "node", "express", "angular", "vue", "html5", "css3", "sass", "tailwind", "bootstrap", "next.js", "graphql", "rest api"],
+        "Cloud/DevOps": ["aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "terraform", "ansible", "ci/cd", "serverless", "ec2", "s3", "lambda"],
+        "Data/AI": ["sql", "nosql", "postgresql", "mongodb", "redis", "elasticsearch", "spark", "hadoop", "nlp", "machine learning", "deep learning", "pytorch", "tensorflow", "pandas", "numpy", "scikit-learn", "data science"],
+        "Frameworks": ["fastapi", "django", "flask", "spring boot", "laravel", "pytorch", "keras", "opencv"]
     }
 
-def extract_skills_ml(text):
-    """
-    Extract skills using the trained scikit-learn model.
-    """
-    if not clf or not vec:
-        return []
-
-    tokens = text.split()
-    features = [get_features(t) for t in tokens]
-    
-    # Vectorize
-    X = vec.transform(features)
-    
-    # Predict
-    preds = clf.predict(X)
-    
-    skills = set()
-    for token, label in zip(tokens, preds):
-        if label == 1:
-            # Simple cleaning
-            clean_token = re.sub(r'^[^\w]+|[^\w]+$', '', token)
-            if len(clean_token) > 1: # Ignore single chars
-                skills.add(clean_token)
+    for category, skills in skill_map.items():
+        for skill in skills:
+            pattern = rf'\b{re.escape(skill)}\b'
+            if re.search(pattern, text_lower):
+                # Format appropriately
+                display_name = skill.replace('\\', '').title()
+                if len(skill) <= 3 or skill.lower() in ["aws", "gcp", "sql", "api", "nlp", "php"]:
+                    display_name = skill.replace('\\', '').upper()
+                extracted["skills"].add(display_name)
             
-    return list(skills)
+    # Specialized Domain Detection (Job Titles)
+    titles = ["software engineer", "data scientist", "frontend developer", "backend developer", "fullstack developer", "devops engineer", "product manager", "project manager", "qa engineer", "solutions architect"]
+    for title in titles:
+        if re.search(rf'\b{re.escape(title)}\b', text_lower):
+            extracted["job_titles"].add(title.title())
+
+    # Education Patterns (Improved)
+    edu_keywords = ["university", "college", "institute", "school", "bachelor", "master", "phd", "btech", "mtech", "degree"]
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    for line in lines:
+        line_low = line.lower()
+        if any(kw in line_low for kw in edu_keywords):
+            # Clean up the line (remove extra dates or symbols often found in resume headers)
+            clean_edu = re.sub(r'\d{4}', '', line).strip(' ,-')
+            if len(clean_edu) > 5:
+                extracted["education"].add(clean_edu)
+            
+    # Experience Patterns (Robust year extraction)
+    exp_patterns = [
+        r'(\d+)\+?\s*years?\s*(?:of\s*)?experience',
+        r'experience[:\s]+(\d+)\s*years',
+        r'(?:total|overall)\s*(\d+)\s*years'
+    ]
+    for pattern in exp_patterns:
+        match = re.search(pattern, text_lower)
+        if match:
+            extracted["experience"].add(f"{match.group(1)}")
+            break
+
+    return {k: list(v) for k, v in extracted.items()}
 
 def extract_skills(text):
-    """
-    Extracts potential skills using ML model first, then falls back/augments with Regex.
-    """
-    found_skills = set()
-    
-    # 1. BERT Extraction (Highest Priority)
-    found_skills.update(extract_skills_bert(text))
-    
-    # 2. ML Extraction (Scikit-Learn)
-    if clf:
-        ml_skills = extract_skills_ml(text)
-        found_skills.update(ml_skills)
+    data = extract_entities_basic(text)
+    return data.get("skills", [])
 
-    # 3. Regex Extraction (Fallback)
-    # Hybrid approach is usually best
-    common_skills = [
-        "python", "java", "c++", "javascript", "html", "css", "sql", "react", 
-        "node.js", "aws", "docker", "kubernetes", "machine learning", "nlp",
-        "pytorch", "tensorflow", "git", "linux", "excel", "communication",
-        "scikit-learn", "pandas", "numpy"
-    ]
+def extract_all_details(text):
+    data = extract_entities_basic(text)
+    contact = extract_contact_info(text)
     
-    for skill in common_skills:
-        if re.search(r'\b' + re.escape(skill) + r'\b', text, re.IGNORECASE):
-            found_skills.add(skill)
-
-    return list(found_skills)
+    data["email"] = contact["email"]
+    data["phone"] = contact["phone"]
+    
+    return data
 
 def extract_contact_info(text):
-    """
-    Extracts email and phone number.
-    """
     email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-    phone_pattern = r'(?:\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}'
+    phone_pattern = r'(?:\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}'
     
     email = re.findall(email_pattern, text)
     phone = re.findall(phone_pattern, text)
@@ -138,36 +96,11 @@ def extract_contact_info(text):
     }
 
 def extract_education(text):
-    """
-    Extracts education degrees using Regex.
-    """
-    # Common degrees
-    patterns = [
-        r"(?i)\b(?:B\.?Sc|M\.?Sc|B\.?A|M\.?A|B\.?Tech|M\.?Tech|Ph\.?D|MBA|Bachelor|Master|Diploma)\b.*?(?:in|of)?.*?(?:Computer Science|Engineering|Information Technology|Data Science|Business|Arts)?",
-    ]
-    
-    education = []
-    for pattern in patterns:
-        found = re.findall(pattern, text)
-        for f in found:
-            # Clean up long matches that might be false positives
-            if len(f.split()) < 10: 
-                education.append(f.strip())
-                
-    # Deduplicate while preserving order
-    return list(dict.fromkeys(education))
+    data = extract_entities_basic(text)
+    return data.get("education", [])
 
 def extract_experience(text):
-    """
-    Extracts years of experience.
-    """
-    # Pattern: "5+ years of experience", "5 years experience", "Experience: 5 years"
-    pattern = r"(\d+(?:\.\d+)?\+?)\s*(?:years?|yrs?)\s*(?:of)?\s*experience"
-    
-    matches = re.search(pattern, text, re.IGNORECASE)
-    if matches:
-        return matches.group(1) # Return the number part (e.g. "5+")
-    
-    # Fallback to just finding "X years" if it looks like a summary
-    # Be more conservative here
-    return None
+    data = extract_entities_basic(text)
+    exps = data.get("experience", [])
+    return exps[0] if exps else None   
+

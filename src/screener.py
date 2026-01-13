@@ -1,50 +1,56 @@
-from sentence_transformers import SentenceTransformer, util
 import logging
+try:
+    from sentence_transformers import SentenceTransformer, util
+except ImportError:
+    SentenceTransformer = None
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Load model globally to avoid reloading on every request (crucial for performance)
-logger.info("Loading SBERT model (all-MiniLM-L6-v2)...")
+# Load model globally
+model = None
 try:
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    logger.info("SBERT model loaded successfully.")
+    if SentenceTransformer:
+        logger.info("Loading SBERT model (all-MiniLM-L6-v2)...")
+        model = SentenceTransformer('all-MiniLM-L6-v2')
+        logger.info("SBERT model loaded successfully.")
+    else:
+        logger.warning("SentenceTransformers not available, will use TF-IDF fallback.")
 except Exception as e:
     logger.error(f"Failed to load SBERT model: {e}")
     model = None
 
 def calculate_similarity(resume_text, job_description):
     """
-    Calculates the semantic similarity between the resume text and the job description
-    using SentenceBERT embeddings.
+    Calculates similarity between resume and JD.
+    Falls back to TF-IDF if SBERT is unavailable.
     """
-    if not model:
-        logger.warning("Model not loaded, returning 0 score.")
+    if model:
+        try:
+            embeddings = model.encode([job_description, resume_text], convert_to_tensor=True)
+            cosine_scores = util.cos_sim(embeddings[0], embeddings[1])
+            score = cosine_scores.item()
+            return round(score * 100, 2)
+        except Exception as e:
+            logger.error(f"SBERT encoding failed: {e}. Falling back to TF-IDF.")
+    
+    # TF-IDF Fallback
+    try:
+        vectorizer = TfidfVectorizer()
+        tfidf = vectorizer.fit_transform([job_description, resume_text])
+        score = cosine_similarity(tfidf[0:1], tfidf[1:2])[0][0]
+        return round(float(score) * 100, 2)
+    except Exception as e:
+        logger.error(f"TF-IDF similarity failed: {e}")
         return 0.0
-        
-    # Encode both texts to get their embeddings
-    # Convert to list if single string to satisfy some versions, though encode handles strings too.
-    embeddings = model.encode([job_description, resume_text], convert_to_tensor=True)
-    
-    # Compute cosine similarity
-    cosine_scores = util.cos_sim(embeddings[0], embeddings[1])
-    
-    # Extract score (tensor to float)
-    score = cosine_scores.item()
-    
-    # Convert to percentage 0-100
-    match_percentage = round(score * 100, 2)
-    
-    return match_percentage
 
 def rank_resumes(resumes_data, job_description):
-    """
-    Ranks resumes based on semantic similarity to job description.
-    resumes_data: List of dicts {'filename': str, 'text': str, 'skills': list}
-    """
     ranked_resumes = []
-    
     for resume in resumes_data:
         score = calculate_similarity(resume['text'], job_description)
         ranked_resumes.append({
@@ -52,8 +58,10 @@ def rank_resumes(resumes_data, job_description):
             'score': score,
             'email': resume.get('contact', {}).get('email'),
             'phone': resume.get('contact', {}).get('phone'),
-            'skills': ', '.join(resume.get('skills', []))
+            'skills': ', '.join(resume.get('skills', [])),
+            'education': ', '.join(resume.get('education', [])),
+            'experience': resume.get('experience')
         })
-    
     ranked_resumes.sort(key=lambda x: x['score'], reverse=True)
     return ranked_resumes
+
